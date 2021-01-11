@@ -1,16 +1,104 @@
 {% extends 'blog/base.html' %}
+{% block title %}Blog Post{% endblock title %}
+{% load static %}
+{% load humanize %}
+{% block blogactive %} active {% endblock blogactive %}
+{% block body %}
 
-{% block content %}
-    <div class="post">
-        {% if post.published_date %}
-            <div class="date">
-                {{ post.published_date }}
-            </div>
-        {% endif %}
+<div class="container" my-3>
+    <h2 class="blog-post-title">{{post.title}}</h2>
+    <p class="blog-post-meta">{{post.published_date}} by <a href="/about">{{post.author}}</a>
+    </p>
+    <p>{{post.text}}</p>
+    <br>
+</div>
+
+<div class="container my-2">
+    <h1>Comments({{comments.count}})</h1>
+
+    <div class="my-2">
         {% if user.is_authenticated %}
-            <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
+        <form action="/blog/postcomment" method="post">
+
+            <div class="form-group">
+
+                <div class="form-group">
+                    {% csrf_token %}
+                    <label for="post">Post Comment</label>
+                    <input type="text" class="form-control" id="comment" name="comment"
+                        placeholder="Enter your comment">
+                    <input type="hidden" class="form-control" id="post_pk" name="post_pk" value="{{post.pk}}">
+                </div>
+                <button type="submit" class="btn btn-primary">Post</button>
+
+            </div>
+
+        </form>
+        {% else %}
+        <div class="my-4">
+            <h5>Please Login to ADD Comments <span class="badge badge-secondary bg-danger">important</span></h5>
+        </div>
         {% endif %}
-            <h2>{{ post.title }}</h2>
-        <p>{{ post.text|linebreaksbr }}</p>
+
     </div>
-{% endblock %}
+    {% for comment in comments  %}
+    <div class="row my-4">
+        <div class="col-md-1 ">
+            <img class="rounded mx-auto d-block w-100 p-2" src="{% static '/images/slider/profile.png' %}" alt="" style>
+        </div>
+        <div class="col-md-10">
+            <b>{{comment.user.username}}</b> <span
+                class="badge badge-secondary">{{comment.timestamp | naturaltime}}</span>
+            <div class="my-2">{{comment.comment}}</div>
+            <div class="reply mx-0">
+                <p>
+                    <button class="btn btn-primary" type="button" data-toggle="collapse"
+                        data-target="#replyBox{{comment.pk}}" aria-expanded="false"
+                        aria-controls="replyBox{{comment.pk}}">
+                        Reply
+                    </button>
+                </p>
+                <div class="collapse" id="replyBox{{comment.pk}}">
+                    <div class="card card-body">
+                        <form action="/blog/postcomment" method="post">
+
+                            <div class="form-group">
+                
+                                <div class="form-group">
+                                    {% csrf_token %}
+                                    <label for="post">Post a Reply</label>
+                                    <input type="text" class="form-control" id="reply" name="comment"
+                                        placeholder="Enter your comment">
+                                    <input type="hidden" class="form-control" name="parent_sno" value="{{comment.pk}}">
+                                </div>
+                                <input type="hidden" class="form-control" id="post_pk" name="post_pk" value="{{post.pk}}">
+                                <button type="submit" class="btn btn-primary">Post</button>
+                
+                            </div>
+                
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock body %}
+
+{% comment %} {% block content %}
+<div class="post">
+    {% if post.published_date %}
+    <div class="date">
+        {{ post.published_date }}
+    </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}"><span
+            class="glyphicon glyphicon-pencil"></span></a>
+    {% endif %}
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.text|linebreaksbr }}</p>
+</div>
+{% endblock %} {% endcomment %}
