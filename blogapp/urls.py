@@ -1,6 +1,9 @@
 from django.urls import path
 from . import views
 from django.conf.urls.static import static
+from django.views.static import serve
+from django.conf.urls import url
+
 
 urlpatterns = [
     path('home',views.home, name='home'),
@@ -17,5 +20,7 @@ urlpatterns = [
     #path('post/new/', views.post_new, name='post_new'),
     #path('post/<int:pk>/edit/', views.post_edit, name='post_edit'),
     #path('About_us')
+    url(r'^media/(?P<path>.*)$', serve,{'document_root':       settings.MEDIA_ROOT}), 
+    url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}), 
     
 ]

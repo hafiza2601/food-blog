@@ -26,7 +26,7 @@ def blog(request):
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
     comments = BlogComment.objects.filter(post=post)
-    context = {'post':post, 'comment':comments}
+    context = {'post':post, 'comments':comments, 'user':request.user}
     return render(request, 'blog/post_detail.html', context)
 
 '''
@@ -38,12 +38,17 @@ def postComment(request):
         user= request.user
         post_pk = request.POST.get("post_pk")
         post = Post.objects.get(pk = post_pk)
-        
+        parent_sno = request.POST.get("post_pk")
+    
 
-        comment = BlogComment(comment= comment, user=user, post=post)
+        if parent_sno == "":
+            comment = BlogComment(comment= comment, user=user, post=post)
+            messages.success(request, "Your comment has been posted successfully")
+        else :
+            parent = BlogComment.objects.get(pk = parent_sno)
+            comment = BlogComment(comment= comment, user=user, post=post, parent=parent) 
+            messages.success(request, "Your Reply has been posted successfully")
         comment.save()
-        messages.success(request, "Your comment has been posted successfully")
-
     return redirect(f"/blog/{post.slug}")
             
 
